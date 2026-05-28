@@ -3,6 +3,7 @@ package com.example.miniproyectosudoku6x6;
 import com.example.miniproyectosudoku6x6.model.Celda;
 import com.example.miniproyectosudoku6x6.model.TableroSudoku;
 import com.example.miniproyectosudoku6x6.model.ValidadorSudoku;
+import com.example.miniproyectosudoku6x6.model.GeneradorSudoku;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -76,61 +77,59 @@ public class Main extends Application {
     }
 
     /**
-     * Temporary test method for the ValidadorSudoku class.
+     * Temporary test method for the GeneradorSudoku class.
      */
-    private static void probarValidador() {
-        System.out.println("=== Prueba de la clase ValidadorSudoku ===");
+    private static void probarGenerador() {
+        System.out.println("=== Prueba de la clase GeneradorSudoku ===");
 
-        TableroSudoku tablero = new TableroSudoku();
-        ValidadorSudoku validador = new ValidadorSudoku(tablero);
+        GeneradorSudoku generador = new GeneradorSudoku();
 
-        // Colocamos algunos numeros para probar
-        tablero.obtenerCelda(0, 0).establecerValor(1);
-        tablero.obtenerCelda(0, 2).establecerValor(3);
-        tablero.obtenerCelda(2, 0).establecerValor(5);
+        // Generar tres tableros y verificar que son diferentes
+        System.out.println("\n--- Tablero 1 ---");
+        TableroSudoku tablero1 = generador.generarNuevoTablero();
+        System.out.println(tablero1);
 
-        System.out.println("Tablero de prueba:");
-        System.out.println(tablero);
+        System.out.println("\n--- Tablero 2 ---");
+        TableroSudoku tablero2 = generador.generarNuevoTablero();
+        System.out.println(tablero2);
 
-        // PRUEBA 1: Validacion correcta
-        System.out.println("--- Prueba de filas ---");
-        System.out.println("Colocar 2 en (0,1) - deberia ser valido: "
-                + validador.esMovimientoValido(0, 1, 2));
-        System.out.println("Colocar 1 en (0,3) - deberia ser invalido (1 ya esta en fila 0): "
-                + validador.esMovimientoValido(0, 3, 1));
+        System.out.println("\n--- Verificaciones del Tablero 1 ---");
 
-        // PRUEBA 2: Validacion de columnas
-        System.out.println("--- Prueba de columnas ---");
-        System.out.println("Colocar 5 en (3,0) - deberia ser invalido (5 ya esta en columna 0): "
-                + validador.esMovimientoValido(3, 0, 5));
-        System.out.println("Colocar 2 en (4,0) - deberia ser valido: "
-                + validador.esMovimientoValido(4, 0, 2));
+        // Contar pistas fijas por bloque
+        int totalFijas = 0;
+        for (int b = 0; b < TableroSudoku.TOTAL_BLOQUES; b++) {
+            int fijasEnBloque = 0;
+            for (Celda c : tablero1.obtenerBloque(b)) {
+                if (c.esFija()) {
+                    fijasEnBloque++;
+                }
+            }
+            System.out.println("Bloque " + b + ": " + fijasEnBloque + " celda(s) fija(s)");
+            totalFijas += fijasEnBloque;
+        }
+        System.out.println("Total de celdas fijas: " + totalFijas
+                + " (esperado: 12)");
 
-        // PRUEBA 3: Validacion de bloques
-        System.out.println("--- Prueba de bloques ---");
-        System.out.println("Colocar 1 en (1,1) - deberia ser invalido (1 ya esta en bloque 0): "
-                + validador.esMovimientoValido(1, 1, 1));
-        System.out.println("Colocar 4 en (1,1) - deberia ser valido: "
-                + validador.esMovimientoValido(1, 1, 4));
-
-        // PRUEBA 4: Reemplazar valor de una celda (no debe compararse consigo misma)
-        System.out.println("--- Prueba de reemplazo ---");
-        System.out.println("Reemplazar (0,0) con 1 (su mismo valor) - deberia ser valido: "
-                + validador.esMovimientoValido(0, 0, 1));
-
-        // PRUEBA 5: Forzar un error y validar tablero completo
-        System.out.println("--- Prueba de validacion completa ---");
-        tablero.obtenerCelda(0, 4).establecerValor(1);  // duplica el 1 en fila 0
+        // Verificar que el tablero parcial es valido
+        ValidadorSudoku validador = new ValidadorSudoku(tablero1);
         boolean valido = validador.validarTableroCompleto();
-        System.out.println("Tablero valido (esperado false): " + valido);
-        System.out.println("Celda (0,0) tiene error? " + tablero.obtenerCelda(0, 0).tieneError());
-        System.out.println("Celda (0,4) tiene error? " + tablero.obtenerCelda(0, 4).tieneError());
-        System.out.println("Celda (2,0) tiene error? " + tablero.obtenerCelda(2, 0).tieneError());
+        System.out.println("Tablero generado es valido? " + valido);
 
-        System.out.println("=== Prueba de Validador completada ===");
+        // Generar y verificar un tablero completo (resuelto)
+        System.out.println("\n--- Tablero resuelto completo ---");
+        TableroSudoku tableroResuelto = generador.generarTableroResuelto();
+        System.out.println(tableroResuelto);
+
+        ValidadorSudoku validadorResuelto = new ValidadorSudoku(tableroResuelto);
+        System.out.println("Tablero resuelto esta completo? "
+                + tableroResuelto.estaCompleto());
+        System.out.println("Tablero resuelto es valido? "
+                + validadorResuelto.estaResueltoCorrectamente());
+
+        System.out.println("\n=== Prueba de Generador completada ===");
     }
     public static void main(String[] args) {
-        probarValidador();
+        probarGenerador();
         //launch(args);
     }
 }
