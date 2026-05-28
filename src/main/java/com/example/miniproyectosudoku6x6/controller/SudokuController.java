@@ -5,6 +5,8 @@ import com.example.miniproyectosudoku6x6.controller.handlers.EscuchadorCambioCel
 import com.example.miniproyectosudoku6x6.model.Celda;
 import com.example.miniproyectosudoku6x6.model.GeneradorSudoku;
 import com.example.miniproyectosudoku6x6.model.TableroSudoku;
+import com.example.miniproyectosudoku6x6.model.ValidadorSudoku;
+import com.example.miniproyectosudoku6x6.model.ProveedorAyuda;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -61,6 +63,12 @@ public class SudokuController implements Initializable, EscuchadorCambioCelda {
 
     /** Generator used to create new random boards. */
     private GeneradorSudoku generador;
+
+    /** Validator used to verify Sudoku rules in real time. */
+    private ValidadorSudoku validador;
+
+    /** Provides intelligent hints when the player gets stuck. */
+    private ProveedorAyuda proveedorAyuda;
 
     /** Mapping from each text field in the UI to its model cell. */
     private final Map<TextField, Celda> mapaCampoCelda = new HashMap<>();
@@ -152,14 +160,18 @@ public class SudokuController implements Initializable, EscuchadorCambioCelda {
     }
 
     /**
-     * Generates a new Sudoku puzzle, clears the UI and renders the new
-     * board. This is the central entry point for starting a fresh game.
+     * Generates a new Sudoku puzzle, refreshes the UI, and resets the
+     * validator so that real-time checks operate on the new board.
      */
     private void iniciarNuevoJuego() {
         this.tablero = generador.generarNuevoTablero();
+        this.validador = new ValidadorSudoku(tablero);
+        this.proveedorAyuda = new ProveedorAyuda(tablero);
         sincronizarMapas();
         refrescarCuadricula();
-        actualizarEstado("Nuevo juego iniciado. Completa el tablero!");
+        refrescarErroresVisuales();
+        desbloquearTablero();
+        aplicarEstadoExito("Nuevo juego iniciado. Completa el tablero!");
     }
 
     /**
@@ -240,11 +252,48 @@ public class SudokuController implements Initializable, EscuchadorCambioCelda {
     }
 
     /**
-     * Placeholder for the help feature (HU-4). Full implementation will
-     * be added in Phase 7.
+     * Requests a hint from the {@link ProveedorAyuda}, applies it to the
+     * model and highlights it visually in the UI. If no hint can be
+     * generated (because the board is full or no legal candidate exists)
+     * the user is notified through the status label.
      */
     private void manejarSolicitudAyuda() {
-        actualizarEstado("La funcion de ayuda se implementara en la siguiente fase.");
+        if (proveedorAyuda == null) {
+            aplicarEstadoError("Inicia un nuevo juego para usar la ayuda.");
+            return;
+        }
+
+        ProveedorAyuda.Sugerencia sugerencia = proveedorAyuda.sugerirAyuda();
+        if (sugerencia == null) {
+            aplicarEstadoError("No se encontraron sugerencias validas en este momento.");
+            return;
+        }
+
+        Celda celdaModelo = tablero.obtenerCelda(
+                sugerencia.obtenerFila(), sugerencia.obtenerColumna()
+        );
+        celdaModelo.establecerValor(sugerencia.obtenerValor());
+
+        TextField campo = mapaCeldaCampo.get(celdaModelo);
+        if (campo != null) {
+            campo.setText(String.valueOf(sugerencia.obtenerValor()));
+            destacarSugerencia(campo);
+        }
+
+        boolean tableroSinErrores = validador.validarTableroCompleto();
+        refrescarErroresVisuales();
+
+        if (verificarVictoria()) {
+            return;
+        }
+
+        if (tableroSinErrores) {
+            aplicarEstadoExito("Ayuda: numero " + sugerencia.obtenerValor()
+                    + " sugerido en (" + (sugerencia.obtenerFila() + 1)
+                    + ", " + (sugerencia.obtenerColumna() + 1) + ").");
+        } else {
+            aplicarEstadoError("Ayuda aplicada, pero hay conflictos previos. Revisa el tablero.");
+        }
     }
 
     /**
@@ -278,18 +327,32 @@ public class SudokuController implements Initializable, EscuchadorCambioCelda {
     /**
      * {@inheritDoc}
      * <p>
-     * This default implementation updates the status label whenever a
-     * cell changes. Full validation logic will be added in Phase 6.
+     * Triggers real-time validation of the entire board after any cell
+     * change. Updates the visual error state of every cell and notifies
+     * the player through the status label. If the board is fully and
+     * correctly completed, displays a victory message.
      * </p>
      */
     @Override
     public void alCambiarCelda(int fila, int columna, int nuevoValor) {
+        boolean tableroSinErrores = validador.validarTableroCompleto();
+        refrescarErroresVisuales();
+
+        if (verificarVictoria()) {
+            return;
+        }
+
         if (nuevoValor == Celda.VALOR_VACIO) {
             actualizarEstado("Celda (" + (fila + 1) + ", " + (columna + 1)
                     + ") borrada.");
+            return;
+        }
+
+        if (!tableroSinErrores) {
+            aplicarEstadoError("Conflicto detectado. Revisa las celdas resaltadas en rojo.");
         } else {
-            actualizarEstado("Numero " + nuevoValor + " colocado en ("
-                    + (fila + 1) + ", " + (columna + 1) + ").");
+            aplicarEstadoExito("Numero " + nuevoValor + " colocado en ("
+                    + (fila + 1) + ", " + (columna + 1) + "). Sin conflictos.");
         }
     }
 
@@ -320,6 +383,112 @@ public class SudokuController implements Initializable, EscuchadorCambioCelda {
     // ================================================================
     // CLASES INTERNAS
     // ================================================================
+
+    /**
+     * Updates the visual error state of every cell in the board.
+     * Cells whose model marks them as having an error get the CSS
+     * class {@code celda-error}; all others have it removed.
+     */
+    private void refrescarErroresVisuales() {
+        for (Map.Entry<Celda, TextField> entrada : mapaCeldaCampo.entrySet()) {
+            Celda celda = entrada.getKey();
+            TextField campo = entrada.getValue();
+
+            campo.getStyleClass().remove("celda-error");
+            if (celda.tieneError() && !celda.esFija()) {
+                campo.getStyleClass().add("celda-error");
+            }
+        }
+    }
+
+    /**
+     * Checks whether the board is fully completed without any rule violation.
+     * When the game has been solved, displays a congratulatory message and
+     * disables further editing.
+     *
+     * @return {@code true} if the game has just been won, {@code false} otherwise
+     */
+    private boolean verificarVictoria() {
+        if (validador.estaResueltoCorrectamente()) {
+            aplicarEstadoExito("Felicidades! Has resuelto el Sudoku correctamente.");
+            bloquearTablero();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Disables editing on every non-fixed cell. Used once the player has
+     * solved the puzzle to prevent further modifications.
+     */
+    private void bloquearTablero() {
+        for (TextField campo : mapaCampoCelda.keySet()) {
+            campo.setEditable(false);
+        }
+    }
+
+    /**
+     * Updates the status label and applies the success style.
+     *
+     * @param mensaje the message to display
+     */
+    private void aplicarEstadoExito(String mensaje) {
+        etiquetaEstado.setText(mensaje);
+        etiquetaEstado.getStyleClass().remove("estado-error");
+        if (!etiquetaEstado.getStyleClass().contains("estado-exito")) {
+            etiquetaEstado.getStyleClass().add("estado-exito");
+        }
+    }
+
+    /**
+     * Updates the status label and applies the error style.
+     *
+     * @param mensaje the message to display
+     */
+    private void aplicarEstadoError(String mensaje) {
+        etiquetaEstado.setText(mensaje);
+        etiquetaEstado.getStyleClass().remove("estado-exito");
+        if (!etiquetaEstado.getStyleClass().contains("estado-error")) {
+            etiquetaEstado.getStyleClass().add("estado-error");
+        }
+    }
+
+    /**
+     * Highlights a cell briefly to indicate it has been filled by the
+     * hint feature. The highlight is removed automatically after a short
+     * delay so it does not interfere with normal play.
+     *
+     * @param campo the text field to highlight
+     */
+    private void destacarSugerencia(TextField campo) {
+        // Limpia destacados previos en cualquier otra celda
+        for (TextField otroCampo : mapaCampoCelda.keySet()) {
+            otroCampo.getStyleClass().remove("celda-sugerencia");
+        }
+        if (!campo.getStyleClass().contains("celda-sugerencia")) {
+            campo.getStyleClass().add("celda-sugerencia");
+        }
+
+        // Programa la eliminacion del destacado despues de 2 segundos
+        javafx.animation.PauseTransition pausa =
+                new javafx.animation.PauseTransition(javafx.util.Duration.seconds(2));
+        pausa.setOnFinished(evento -> campo.getStyleClass().remove("celda-sugerencia"));
+        pausa.play();
+    }
+
+    /**
+     * Re-enables editing on every non-fixed cell. Used after a victory
+     * when the player starts a new game.
+     */
+    private void desbloquearTablero() {
+        for (Map.Entry<TextField, Celda> entrada : mapaCampoCelda.entrySet()) {
+            TextField campo = entrada.getKey();
+            Celda celda = entrada.getValue();
+            if (!celda.esFija()) {
+                campo.setEditable(true);
+            }
+        }
+    }
 
     /**
      * Inner class that handles key released events on a specific cell.
