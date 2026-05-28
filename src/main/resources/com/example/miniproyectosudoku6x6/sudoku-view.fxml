@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.example.miniproyectosudoku6x6.controller.SudokuController"
+            stylesheets="@styles.css"
+            styleClass="raiz-principal">
+
+    <!-- ============== ENCABEZADO ============== -->
+    <top>
+        <VBox alignment="CENTER" spacing="5" styleClass="encabezado">
+            <padding>
+                <Insets top="20" bottom="20" left="20" right="20"/>
+            </padding>
+            <Label text="Sudoku 6x6" styleClass="titulo-principal"/>
+            <Label text="Universidad del Valle - Fundamentos de POE"
+                   styleClass="subtitulo"/>
+        </VBox>
+    </top>
+
+    <!-- ============== CENTRO: TABLERO ============== -->
+    <center>
+        <VBox alignment="CENTER" spacing="15">
+            <padding>
+                <Insets top="10" bottom="10" left="20" right="20"/>
+            </padding>
+
+            <!-- Tablero 6x6 -->
+            <GridPane fx:id="cuadriculaTablero"
+                      alignment="CENTER"
+                      hgap="0"
+                      vgap="0"
+                      styleClass="tablero-sudoku">
+            </GridPane>
+
+            <!-- Texto de instrucciones (reconocer en vez de recordar) -->
+            <Label text="Completa el tablero con numeros del 1 al 6. Sin repetir en filas, columnas ni bloques."
+                   styleClass="instrucciones"
+                   wrapText="true"/>
+        </VBox>
+    </center>
+
+    <!-- ============== PARTE INFERIOR: BOTONES Y ESTADO ============== -->
+    <bottom>
+        <VBox spacing="10" alignment="CENTER" styleClass="pie-pagina">
+            <padding>
+                <Insets top="15" bottom="20" left="20" right="20"/>
+            </padding>
+
+            <!-- Botones de accion -->
+            <HBox alignment="CENTER" spacing="20">
+                <Button fx:id="botonNuevoJuego"
+                        text="Nuevo Juego"
+                        styleClass="boton-primario"
+                        prefWidth="160"
+                        prefHeight="40"/>
+                <Button fx:id="botonAyuda"
+                        text="Ayuda"
+                        styleClass="boton-secundario"
+                        prefWidth="160"
+                        prefHeight="40"/>
+            </HBox>
+
+            <!-- Etiqueta de estado (visibilidad del estado del sistema) -->
+            <Label fx:id="etiquetaEstado"
+                   text="Cargando..."
+                   styleClass="estado"
+                   wrapText="true"/>
+        </VBox>
+    </bottom>
+
+</BorderPane>
