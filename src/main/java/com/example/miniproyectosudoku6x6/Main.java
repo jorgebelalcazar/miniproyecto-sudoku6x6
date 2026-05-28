@@ -1,9 +1,7 @@
 package com.example.miniproyectosudoku6x6;
 
-import com.example.miniproyectosudoku6x6.model.Celda;
 import com.example.miniproyectosudoku6x6.model.GeneradorSudoku;
 import com.example.miniproyectosudoku6x6.model.TableroSudoku;
-import com.example.miniproyectosudoku6x6.model.ValidadorSudoku;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -30,10 +28,10 @@ public class Main extends Application {
     private static final String TITULO_VENTANA = "Sudoku 6x6 - Universidad del Valle";
 
     /** Default width of the main window, in pixels. */
-    private static final int ANCHO_VENTANA = 560;
+    private static final int ANCHO_VENTANA = 520;
 
     /** Default height of the main window, in pixels. */
-    private static final int ALTO_VENTANA = 720;
+    private static final int ALTO_VENTANA = 680;
 
     /** Path of the main FXML view, relative to the resources folder. */
     private static final String RUTA_FXML = "/com/example/miniproyectosudoku6x6/sudoku-view.fxml";

@@ -7,6 +7,7 @@ import com.example.miniproyectosudoku6x6.model.GeneradorSudoku;
 import com.example.miniproyectosudoku6x6.model.TableroSudoku;
 import com.example.miniproyectosudoku6x6.model.ValidadorSudoku;
 import com.example.miniproyectosudoku6x6.model.ProveedorAyuda;
+import com.example.miniproyectosudoku6x6.view.FabricaEstilos;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -16,6 +17,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.input.KeyCode;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -122,19 +124,20 @@ public class SudokuController implements Initializable, EscuchadorCambioCelda {
         TextField campo = new TextField();
         campo.getStyleClass().add("celda");
 
-        if (esBordeDerechoBloque(columna) && esBordeInferiorBloque(fila)) {
-            campo.getStyleClass().add("celda-borde-inferior-derecho");
-        } else if (esBordeDerechoBloque(columna)) {
-            campo.getStyleClass().add("celda-borde-derecho");
-        } else if (esBordeInferiorBloque(fila)) {
-            campo.getStyleClass().add("celda-borde-inferior");
-        }
+        FabricaEstilos.aplicarBordesBloque(
+                campo,
+                esBordeDerechoBloque(columna),
+                esBordeInferiorBloque(fila)
+        );
 
         // prevencion de errores (filtro de entrada)
         campo.addEventFilter(KeyEvent.KEY_TYPED, filtroEntrada);
 
         // Manejador de teclas: clase interna
         campo.setOnKeyReleased(new ManejadorTeclado(fila, columna));
+
+        // Manejador de navegacion con flechas del teclado
+        campo.setOnKeyPressed(eventoTecla -> manejarNavegacionTeclado(eventoTecla, fila, columna));
 
         // Manejador de mouse: expresion lambda
         campo.setOnMouseClicked(eventoMouse -> manejarClickCelda(eventoMouse, fila, columna));
@@ -209,20 +212,17 @@ public class SudokuController implements Initializable, EscuchadorCambioCelda {
             TextField campo = entrada.getKey();
             Celda celda = entrada.getValue();
 
-            campo.getStyleClass().remove("celda-fija");
-            campo.getStyleClass().remove("celda-error");
+            FabricaEstilos.quitarEstiloCeldaFija(campo);
+            FabricaEstilos.aplicarEstiloError(campo, false);
 
             if (celda.esFija()) {
                 campo.setText(String.valueOf(celda.obtenerValor()));
                 campo.setEditable(false);
-                campo.getStyleClass().add("celda-fija");
+                FabricaEstilos.aplicarEstiloCeldaFija(campo);
             } else {
                 campo.setEditable(true);
-                if (celda.estaVacia()) {
-                    campo.setText("");
-                } else {
-                    campo.setText(String.valueOf(celda.obtenerValor()));
-                }
+                campo.setText(celda.estaVacia()
+                        ? "" : String.valueOf(celda.obtenerValor()));
             }
         }
     }
@@ -385,19 +385,17 @@ public class SudokuController implements Initializable, EscuchadorCambioCelda {
     // ================================================================
 
     /**
-     * Updates the visual error state of every cell in the board.
-     * Cells whose model marks them as having an error get the CSS
-     * class {@code celda-error}; all others have it removed.
+     * Updates the visual error state of every cell in the board by
+     * delegating to the {@link FabricaEstilos}. Cells whose model marks
+     * them as having an error get the error style applied; all others have
+     * it removed.
      */
     private void refrescarErroresVisuales() {
         for (Map.Entry<Celda, TextField> entrada : mapaCeldaCampo.entrySet()) {
             Celda celda = entrada.getKey();
             TextField campo = entrada.getValue();
-
-            campo.getStyleClass().remove("celda-error");
-            if (celda.tieneError() && !celda.esFija()) {
-                campo.getStyleClass().add("celda-error");
-            }
+            boolean debeMostrarError = celda.tieneError() && !celda.esFija();
+            FabricaEstilos.aplicarEstiloError(campo, debeMostrarError);
         }
     }
 
@@ -428,51 +426,44 @@ public class SudokuController implements Initializable, EscuchadorCambioCelda {
     }
 
     /**
-     * Updates the status label and applies the success style.
+     * Updates the status label with a success message and applies the
+     * success style through the {@link FabricaEstilos}.
      *
      * @param mensaje the message to display
      */
     private void aplicarEstadoExito(String mensaje) {
         etiquetaEstado.setText(mensaje);
-        etiquetaEstado.getStyleClass().remove("estado-error");
-        if (!etiquetaEstado.getStyleClass().contains("estado-exito")) {
-            etiquetaEstado.getStyleClass().add("estado-exito");
-        }
+        FabricaEstilos.aplicarEstadoExito(etiquetaEstado);
     }
 
     /**
-     * Updates the status label and applies the error style.
+     * Updates the status label with an error message and applies the
+     * error style through the {@link FabricaEstilos}.
      *
      * @param mensaje the message to display
      */
     private void aplicarEstadoError(String mensaje) {
         etiquetaEstado.setText(mensaje);
-        etiquetaEstado.getStyleClass().remove("estado-exito");
-        if (!etiquetaEstado.getStyleClass().contains("estado-error")) {
-            etiquetaEstado.getStyleClass().add("estado-error");
-        }
+        FabricaEstilos.aplicarEstadoError(etiquetaEstado);
     }
 
     /**
      * Highlights a cell briefly to indicate it has been filled by the
      * hint feature. The highlight is removed automatically after a short
-     * delay so it does not interfere with normal play.
+     * delay so it does not interfere with normal play. Delegates the
+     * actual style manipulation to {@link FabricaEstilos}.
      *
      * @param campo the text field to highlight
      */
     private void destacarSugerencia(TextField campo) {
-        // Limpia destacados previos en cualquier otra celda
         for (TextField otroCampo : mapaCampoCelda.keySet()) {
-            otroCampo.getStyleClass().remove("celda-sugerencia");
+            FabricaEstilos.quitarEstiloSugerencia(otroCampo);
         }
-        if (!campo.getStyleClass().contains("celda-sugerencia")) {
-            campo.getStyleClass().add("celda-sugerencia");
-        }
+        FabricaEstilos.aplicarEstiloSugerencia(campo);
 
-        // Programa la eliminacion del destacado despues de 2 segundos
         javafx.animation.PauseTransition pausa =
                 new javafx.animation.PauseTransition(javafx.util.Duration.seconds(2));
-        pausa.setOnFinished(evento -> campo.getStyleClass().remove("celda-sugerencia"));
+        pausa.setOnFinished(evento -> FabricaEstilos.quitarEstiloSugerencia(campo));
         pausa.play();
     }
 
@@ -488,6 +479,80 @@ public class SudokuController implements Initializable, EscuchadorCambioCelda {
                 campo.setEditable(true);
             }
         }
+    }
+
+    /**
+     * Handles keyboard navigation across cells of the Sudoku board.
+     * <p>
+     * When the user presses one of the arrow keys, the focus is moved to
+     * the next editable (non-fixed) cell in the corresponding direction.
+     * Fixed cells are automatically skipped because the player cannot
+     * type into them. Navigation wraps inside the board boundaries: if
+     * there is no editable cell in the requested direction, focus stays
+     * on the current cell.
+     * </p>
+     *
+     * @param evento  the key press event triggered by the user
+     * @param fila    the row of the cell that currently has focus
+     * @param columna the column of the cell that currently has focus
+     */
+    private void manejarNavegacionTeclado(KeyEvent evento, int fila, int columna) {
+        KeyCode codigo = evento.getCode();
+        int filaDestino = fila;
+        int columnaDestino = columna;
+        int deltaFila = 0;
+        int deltaColumna = 0;
+
+        if (codigo == KeyCode.UP) {
+            deltaFila = -1;
+        } else if (codigo == KeyCode.DOWN) {
+            deltaFila = 1;
+        } else if (codigo == KeyCode.LEFT) {
+            deltaColumna = -1;
+        } else if (codigo == KeyCode.RIGHT) {
+            deltaColumna = 1;
+        } else {
+            return;
+        }
+
+        TextField campoDestino = buscarCampoNavegable(
+                filaDestino, columnaDestino, deltaFila, deltaColumna
+        );
+
+        if (campoDestino != null) {
+            campoDestino.requestFocus();
+            campoDestino.selectAll();
+            evento.consume();
+        }
+    }
+
+    /**
+     * Searches for the next editable (non-fixed) cell starting from the
+     * given coordinates and advancing in the direction indicated by the
+     * deltas. Returns {@code null} if no editable cell is found before
+     * reaching the edge of the board.
+     *
+     * @param filaInicial    the starting row index
+     * @param columnaInicial the starting column index
+     * @param deltaFila      vertical step (-1, 0 or 1)
+     * @param deltaColumna   horizontal step (-1, 0 or 1)
+     * @return the next editable text field, or {@code null} if none exists
+     */
+    private TextField buscarCampoNavegable(int filaInicial, int columnaInicial,
+                                           int deltaFila, int deltaColumna) {
+        int fila = filaInicial + deltaFila;
+        int columna = columnaInicial + deltaColumna;
+
+        while (fila >= 0 && fila < TableroSudoku.TOTAL_FILAS
+                && columna >= 0 && columna < TableroSudoku.TOTAL_COLUMNAS) {
+            Celda celda = tablero.obtenerCelda(fila, columna);
+            if (!celda.esFija()) {
+                return mapaCeldaCampo.get(celda);
+            }
+            fila += deltaFila;
+            columna += deltaColumna;
+        }
+        return null;
     }
 
     /**

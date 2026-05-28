@@ -12,4 +12,6 @@ module com.example.miniproyectosudoku6x6 {
     opens com.example.miniproyectosudoku6x6.controller to javafx.fxml;
 
     exports com.example.miniproyectosudoku6x6.controller.handlers;
+
+    exports com.example.miniproyectosudoku6x6.view;
 }
