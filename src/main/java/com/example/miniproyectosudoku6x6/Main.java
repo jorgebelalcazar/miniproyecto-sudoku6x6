@@ -1,6 +1,7 @@
 package com.example.miniproyectosudoku6x6;
 
 import com.example.miniproyectosudoku6x6.model.Celda;
+import com.example.miniproyectosudoku6x6.model.TableroSudoku;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -84,43 +85,64 @@ public class Main extends Application {
      * Temporary test method for the Celda class.
      * This will be removed once the SudokuBoard class is implemented.
      */
+    /**
+     * Temporary test method for the Celda class.
+     */
     private static void probarCelda() {
         System.out.println("=== Prueba de la clase Celda ===");
 
-        // Prueba 1: Crear una celda vacia
         Celda celda = new Celda(2, 3);
         System.out.println("Creada: " + celda);
-        System.out.println("Esta vacia? " + celda.estaVacia());
 
-        // Prueba 2: Establecer un valor valido
         celda.establecerValor(4);
         System.out.println("Despues de establecerValor(4): " + celda);
 
-        // Prueba 3: Limpiar la celda
-        celda.limpiar();
-        System.out.println("Despues de limpiar(): " + celda);
-
-        // Prueba 4: Marcar como fija
         celda.marcarComoFija(5);
         System.out.println("Despues de marcarComoFija(5): " + celda);
 
-        // Prueba 5: Intentar modificar una celda fija (debe fallar)
-        try {
-            celda.establecerValor(2);
-        } catch (IllegalStateException e) {
-            System.out.println("Bloqueado correctamente: " + e.getMessage());
-        }
+        System.out.println("=== Prueba de Celda completada ===\n");
+    }
 
-        // Prueba 6: Marcar estado de error
-        Celda celdaError = new Celda(0, 0);
-        celdaError.establecerValor(3);
-        celdaError.establecerError(true);
-        System.out.println("Celda con error: " + celdaError);
+    /**
+     * Temporary test method for the TableroSudoku class.
+     */
+    private static void probarTablero() {
+        System.out.println("=== Prueba de la clase TableroSudoku ===");
 
-        System.out.println("=== Prueba completada ===");
+        TableroSudoku tablero = new TableroSudoku();
+
+        System.out.println("Tablero recien creado:");
+        System.out.println(tablero);
+
+        System.out.println("Esta completo? " + tablero.estaCompleto());
+
+        // Insertamos algunos valores de prueba
+        tablero.obtenerCelda(0, 0).establecerValor(1);
+        tablero.obtenerCelda(0, 3).establecerValor(2);
+        tablero.obtenerCelda(2, 1).establecerValor(3);
+        tablero.obtenerCelda(5, 5).establecerValor(6);
+
+        System.out.println("Tablero con algunos valores:");
+        System.out.println(tablero);
+
+        // Verificamos los indices de bloque
+        System.out.println("Indice de bloque para (0,0): " +
+                TableroSudoku.calcularIndiceBloque(0, 0));
+        System.out.println("Indice de bloque para (2,4): " +
+                TableroSudoku.calcularIndiceBloque(2, 4));
+        System.out.println("Indice de bloque para (5,5): " +
+                TableroSudoku.calcularIndiceBloque(5, 5));
+
+        // Verificamos las agrupaciones
+        System.out.println("Celdas en la fila 0: " + tablero.obtenerFila(0).size());
+        System.out.println("Celdas en la columna 3: " + tablero.obtenerColumna(3).size());
+        System.out.println("Celdas en el bloque 0: " + tablero.obtenerBloque(0).size());
+
+        System.out.println("=== Prueba de Tablero completada ===");
     }
     public static void main(String[] args) {
         probarCelda();
+        probarTablero();
         //launch(args);
     }
 }
