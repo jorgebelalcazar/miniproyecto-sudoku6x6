@@ -1,5 +1,6 @@
 package com.example.miniproyectosudoku6x6;
 
+import com.example.miniproyectosudoku6x6.model.Celda;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -22,7 +23,7 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
     /** Window title displayed in the application's title bar. */
-    private static final String WINDOW_TITLE = "Sudoku 6x6 - Universidad del Valle";
+    private static final String WINDOW_TITLE = "Sudoku 6x6";
 
     /** Default width of the application window, in pixels. */
     private static final int WINDOW_WIDTH = 600;
@@ -45,7 +46,7 @@ public class Main extends Application {
                         "-fx-text-fill: #2c3e50;"
         );
 
-        Label subtitleLabel = new Label("Mini Proyecto #2 - Fundamentos de POE");
+        Label subtitleLabel = new Label("MiniProyecto Sudoku6x6 - Fundamentos de POE");
         subtitleLabel.setStyle(
                 "-fx-font-size: 14px;" +
                         "-fx-text-fill: #7f8c8d;"
@@ -78,7 +79,48 @@ public class Main extends Application {
      *
      * @param args command-line arguments (unused)
      */
+
+    /**
+     * Temporary test method for the Celda class.
+     * This will be removed once the SudokuBoard class is implemented.
+     */
+    private static void probarCelda() {
+        System.out.println("=== Prueba de la clase Celda ===");
+
+        // Prueba 1: Crear una celda vacia
+        Celda celda = new Celda(2, 3);
+        System.out.println("Creada: " + celda);
+        System.out.println("Esta vacia? " + celda.estaVacia());
+
+        // Prueba 2: Establecer un valor valido
+        celda.establecerValor(4);
+        System.out.println("Despues de establecerValor(4): " + celda);
+
+        // Prueba 3: Limpiar la celda
+        celda.limpiar();
+        System.out.println("Despues de limpiar(): " + celda);
+
+        // Prueba 4: Marcar como fija
+        celda.marcarComoFija(5);
+        System.out.println("Despues de marcarComoFija(5): " + celda);
+
+        // Prueba 5: Intentar modificar una celda fija (debe fallar)
+        try {
+            celda.establecerValor(2);
+        } catch (IllegalStateException e) {
+            System.out.println("Bloqueado correctamente: " + e.getMessage());
+        }
+
+        // Prueba 6: Marcar estado de error
+        Celda celdaError = new Celda(0, 0);
+        celdaError.establecerValor(3);
+        celdaError.establecerError(true);
+        System.out.println("Celda con error: " + celdaError);
+
+        System.out.println("=== Prueba completada ===");
+    }
     public static void main(String[] args) {
-        launch(args);
+        probarCelda();
+        //launch(args);
     }
 }
