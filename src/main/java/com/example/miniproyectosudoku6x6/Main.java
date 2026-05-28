@@ -2,6 +2,7 @@ package com.example.miniproyectosudoku6x6;
 
 import com.example.miniproyectosudoku6x6.model.Celda;
 import com.example.miniproyectosudoku6x6.model.TableroSudoku;
+import com.example.miniproyectosudoku6x6.model.ValidadorSudoku;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -75,74 +76,61 @@ public class Main extends Application {
     }
 
     /**
-     * Standard Java entry point. Delegates control to JavaFX through
-     * {@link Application#launch(String...)}.
-     *
-     * @param args command-line arguments (unused)
+     * Temporary test method for the ValidadorSudoku class.
      */
-
-    /**
-     * Temporary test method for the Celda class.
-     * This will be removed once the SudokuBoard class is implemented.
-     */
-    /**
-     * Temporary test method for the Celda class.
-     */
-    private static void probarCelda() {
-        System.out.println("=== Prueba de la clase Celda ===");
-
-        Celda celda = new Celda(2, 3);
-        System.out.println("Creada: " + celda);
-
-        celda.establecerValor(4);
-        System.out.println("Despues de establecerValor(4): " + celda);
-
-        celda.marcarComoFija(5);
-        System.out.println("Despues de marcarComoFija(5): " + celda);
-
-        System.out.println("=== Prueba de Celda completada ===\n");
-    }
-
-    /**
-     * Temporary test method for the TableroSudoku class.
-     */
-    private static void probarTablero() {
-        System.out.println("=== Prueba de la clase TableroSudoku ===");
+    private static void probarValidador() {
+        System.out.println("=== Prueba de la clase ValidadorSudoku ===");
 
         TableroSudoku tablero = new TableroSudoku();
+        ValidadorSudoku validador = new ValidadorSudoku(tablero);
 
-        System.out.println("Tablero recien creado:");
-        System.out.println(tablero);
-
-        System.out.println("Esta completo? " + tablero.estaCompleto());
-
-        // Insertamos algunos valores de prueba
+        // Colocamos algunos numeros para probar
         tablero.obtenerCelda(0, 0).establecerValor(1);
-        tablero.obtenerCelda(0, 3).establecerValor(2);
-        tablero.obtenerCelda(2, 1).establecerValor(3);
-        tablero.obtenerCelda(5, 5).establecerValor(6);
+        tablero.obtenerCelda(0, 2).establecerValor(3);
+        tablero.obtenerCelda(2, 0).establecerValor(5);
 
-        System.out.println("Tablero con algunos valores:");
+        System.out.println("Tablero de prueba:");
         System.out.println(tablero);
 
-        // Verificamos los indices de bloque
-        System.out.println("Indice de bloque para (0,0): " +
-                TableroSudoku.calcularIndiceBloque(0, 0));
-        System.out.println("Indice de bloque para (2,4): " +
-                TableroSudoku.calcularIndiceBloque(2, 4));
-        System.out.println("Indice de bloque para (5,5): " +
-                TableroSudoku.calcularIndiceBloque(5, 5));
+        // PRUEBA 1: Validacion correcta
+        System.out.println("--- Prueba de filas ---");
+        System.out.println("Colocar 2 en (0,1) - deberia ser valido: "
+                + validador.esMovimientoValido(0, 1, 2));
+        System.out.println("Colocar 1 en (0,3) - deberia ser invalido (1 ya esta en fila 0): "
+                + validador.esMovimientoValido(0, 3, 1));
 
-        // Verificamos las agrupaciones
-        System.out.println("Celdas en la fila 0: " + tablero.obtenerFila(0).size());
-        System.out.println("Celdas en la columna 3: " + tablero.obtenerColumna(3).size());
-        System.out.println("Celdas en el bloque 0: " + tablero.obtenerBloque(0).size());
+        // PRUEBA 2: Validacion de columnas
+        System.out.println("--- Prueba de columnas ---");
+        System.out.println("Colocar 5 en (3,0) - deberia ser invalido (5 ya esta en columna 0): "
+                + validador.esMovimientoValido(3, 0, 5));
+        System.out.println("Colocar 2 en (4,0) - deberia ser valido: "
+                + validador.esMovimientoValido(4, 0, 2));
 
-        System.out.println("=== Prueba de Tablero completada ===");
+        // PRUEBA 3: Validacion de bloques
+        System.out.println("--- Prueba de bloques ---");
+        System.out.println("Colocar 1 en (1,1) - deberia ser invalido (1 ya esta en bloque 0): "
+                + validador.esMovimientoValido(1, 1, 1));
+        System.out.println("Colocar 4 en (1,1) - deberia ser valido: "
+                + validador.esMovimientoValido(1, 1, 4));
+
+        // PRUEBA 4: Reemplazar valor de una celda (no debe compararse consigo misma)
+        System.out.println("--- Prueba de reemplazo ---");
+        System.out.println("Reemplazar (0,0) con 1 (su mismo valor) - deberia ser valido: "
+                + validador.esMovimientoValido(0, 0, 1));
+
+        // PRUEBA 5: Forzar un error y validar tablero completo
+        System.out.println("--- Prueba de validacion completa ---");
+        tablero.obtenerCelda(0, 4).establecerValor(1);  // duplica el 1 en fila 0
+        boolean valido = validador.validarTableroCompleto();
+        System.out.println("Tablero valido (esperado false): " + valido);
+        System.out.println("Celda (0,0) tiene error? " + tablero.obtenerCelda(0, 0).tieneError());
+        System.out.println("Celda (0,4) tiene error? " + tablero.obtenerCelda(0, 4).tieneError());
+        System.out.println("Celda (2,0) tiene error? " + tablero.obtenerCelda(2, 0).tieneError());
+
+        System.out.println("=== Prueba de Validador completada ===");
     }
     public static void main(String[] args) {
-        probarCelda();
-        probarTablero();
+        probarValidador();
         //launch(args);
     }
 }

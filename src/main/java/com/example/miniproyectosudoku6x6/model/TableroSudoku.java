@@ -2,7 +2,6 @@ package com.example.miniproyectosudoku6x6.model;
 
 import java.util.ArrayList;
 import java.util.List;
-
 /**
  * Represents the complete 6x6 Sudoku board.
  * <p>
