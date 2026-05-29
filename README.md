@@ -16,7 +16,7 @@ Implementación del juego clásico Sudoku adaptado a una cuadrícula de **6x6**,
 - [Cómo jugar](#-cómo-jugar)
 - [Arquitectura del proyecto](#-arquitectura-del-proyecto)
 - [Estructuras de datos utilizadas](#-estructuras-de-datos-utilizadas)
-- [Heurísticas de usabilidad aplicadas](#-heurísticas-de-usabilidad-aplicadas)
+- [Rubricas de usabilidad aplicadas](#-rubricas-de-usabilidad-aplicadas)
 - [Documentación del código](#-documentación-del-código)
 - [Tecnologías utilizadas](#-tecnologías-utilizadas)
 - [Autores](#-autores)
