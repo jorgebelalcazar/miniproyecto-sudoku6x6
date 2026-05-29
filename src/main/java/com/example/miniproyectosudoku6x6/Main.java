@@ -65,24 +65,12 @@ public class Main extends Application {
     }
 
     /**
-     * Temporary test method for the GeneradorSudoku class.
-     */
-    private static void probarGenerador() {
-        System.out.println("=== Prueba de la clase GeneradorSudoku ===");
-        GeneradorSudoku generador = new GeneradorSudoku();
-        TableroSudoku tablero = generador.generarNuevoTablero();
-        System.out.println(tablero);
-        System.out.println("=== Prueba de Generador completada ===\n");
-    }
-
-    /**
      * Standard Java entry point. Delegates control to JavaFX through
      * {@link Application#launch(String...)}.
      *
      * @param args command-line arguments (unused)
      */
     public static void main(String[] args) {
-        probarGenerador();
         launch(args);
     }
 }

@@ -1,0 +1,1 @@
+moduleSearchIndex = [{"l":"com.example.miniproyectosudoku6x6"}];updateSearchResults();

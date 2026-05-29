@@ -1,0 +1,6 @@
+module:com.example.miniproyectosudoku6x6
+com.example.miniproyectosudoku6x6
+com.example.miniproyectosudoku6x6.controller
+com.example.miniproyectosudoku6x6.controller.handlers
+com.example.miniproyectosudoku6x6.model
+com.example.miniproyectosudoku6x6.view
