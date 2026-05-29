@@ -175,7 +175,7 @@ Más allá de los arreglos básicos, el proyecto emplea **estructuras avanzadas*
 
 ## 🎨 Rubrica de usabilidad aplicadas
 
-Se aplicaron **6 heurísticas** para optimizar la experiencia de usuario:
+Se aplicaron **6 Rubricas** para optimizar la experiencia de usuario:
 
 | #      | Rubrica                            | Implementación |
 |--------|------------------------------------|---|
@@ -211,7 +211,7 @@ Todo el código fuente está documentado en **inglés** siguiendo el estándar *
 |---------------------------|--------------------|------------------------------------------|
 | **Jorge Iván Belalcázar** | `2374654`          | `jorge.belalcazar@correounivalle.edu.co` |
 
-**Profesor:** Fabian Stiven Valencia Cordoba 
+**Profesor:** Fabian Stiven Valencia Cordoba
 **Curso:** Fundamentos de Programación Orientada a Eventos  
 **Código:** 750014C  
 **Periodo:** 2026-1
